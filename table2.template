@@ -1,0 +1,117 @@
+//Author: Aniruddh Kathiriya
+//Assignment 10
+
+#include <cassert>  // Provides assert
+#include <cstdlib>  // Provides size_t
+#include <list>
+
+namespace main_savitch_12B
+{	
+	template<class RecordType>
+    const std::size_t table<RecordType>::TABLE_SIZE;
+	
+	template <class RecordType>
+	table<RecordType>::table( ){
+	    std::size_t i;
+
+        total_records = 0;
+        for (i = 0; i < TABLE_SIZE; ++i)
+            data[i].clear();
+		
+	}
+	template <class RecordType>
+	table<RecordType>::table(const table& source){
+		total_records = source.total_records;
+		for(std::size_t i=0;i<TABLE_SIZE;i++){
+			data[i]=source.data[i];
+		}
+	}
+	template <class RecordType>
+	table<RecordType>::~table( ){
+	    total_records = 0;
+        for(std::size_t i = 0; i < TABLE_SIZE; i++)
+        {
+            data[i].clear();
+        }
+	}
+	template <class RecordType>
+	void table<RecordType>::insert(const RecordType& entry){
+
+		assert(entry.key >= 0);
+		RecordType result;
+		bool already_present;   // True if entry.key is already in the table
+        std::size_t index;        // data[index] is location for the new entry
+		find(entry.key,already_present,result);
+		if(!already_present){
+			//assert(size( ) < CAPACITY);
+			index=hash(entry.key);
+			
+			data[index].push_back(entry);
+			total_records++;
+			
+		}else{
+			for(typename std::list<RecordType>::iterator it= data[hash(entry.key)].begin();it != data[hash(entry.key)].end();it++)
+			{
+            if(it->key == entry.key){
+               *it= entry;
+			   break;
+			   }
+			}
+		
+		}
+		
+	
+	}
+	template <class RecordType>
+	void table<RecordType>::find(int key, bool& found, RecordType& result) const{
+		 std::list<RecordType> table=data[hash(key)];
+		 for(typename std::list<RecordType>::iterator it=table.begin(); it != table.end(); it++){
+			if(it->key==key){
+			found=true;
+			result=*it;
+			break;
+			}
+		 }
+	
+	}
+	template <class RecordType>
+    bool table<RecordType>::is_present(int key) const{
+		std::list<RecordType> table=data[hash(key)];
+		for(typename std::list<RecordType>::iterator it=table.begin();it!=table.end();it++){
+			if(it->key==key){
+				return true;
+			}
+		 }
+		 return false;
+	
+	}
+	template <class RecordType>
+	void table<RecordType>::remove(int key){
+		std::list<RecordType> &table=data[hash(key)];	
+		for(typename std::list<RecordType>::iterator it=table.begin();it!=table.end();it++){
+			if(it->key==key){
+				table.erase(it);
+				total_records--;
+				return;
+			}
+		 }
+	
+	
+	}
+	
+	template <class RecordType>
+    std::size_t table<RecordType>::hash(int key) const{
+        return key % TABLE_SIZE;
+    }
+	template <class RecordType>
+    void table<RecordType>::operator =(const table& source)
+    {
+        if(this != &source)
+        {
+            data = source.data;
+            total_records = source.total_records;
+        }
+    }
+
+
+}
